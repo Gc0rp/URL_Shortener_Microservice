@@ -6,38 +6,34 @@ const dns = require('dns');
 var urls = [];
 
 Router.use(bodyParser.urlencoded({extended: false}));
-Router.post('/', function(req, res, next){
+Router.post('/new', function(req, res, next){
   console.log("Before request: " + urls);
-  // dns.lookup(String(req.body.url), (err) => { 
-  //   console.log(err);
-  //   if(err.code == "ENOTFOUND") {
-  //     console.log("Error thrown");
-  //     res.json({"error": "invalid URL"});
-  //     } else {
-  //       let urlIndex = urls.indexOf(req.body.url);
-  //       if(urlIndex != -1){
-  //         res.json({"original url":req.body.url, "short_url":urlIndex});
-  //       } else {
-  //         res.json({"original url":req.body.url, "short_url":urls.length});
-  //         urls.push(req.body.url);
-  //     }
-  //   }
-  // });
-  
-  dns.lookup(req.body.url, (err, addresses, family) => {
-    console.log(err);
-   });
-
-   
-   testURL = 'https://www.google.com';
-   myRegex = /^https:\/\//;
-
-   // Look for the https at the start of the string
-   if(myRegex.test(testURL)) {
+  let myRegex = /^https:\/\//;
+  if(myRegex.test(req.body.url)) {
        // Strip the 'https://'
-       testURL = testURL.slice(8);
+       req.body.url = req.body.url.slice(8);
    }
+  dns.lookup(String(req.body.url), (err) => { 
+    
+    if(err == null) {
+      
+      let urlIndex = urls.indexOf(req.body.url);
+        
+        if(urlIndex != -1){
+          res.json({"original url":req.body.url, "short_url":urlIndex});
+        } else {
+          res.json({"original url":req.body.url, "short_url":urls.length});
+          urls.push(req.body.url);
+        }
+    } else {
+        res.json({"error": "invalid URL"});
+      }
+  });
+});
 
+
+Router.get('/:urlNumber', function(req, res, next){ 
+  res.redirect(urls[req.params.urlNumber]);
 });
 
 
